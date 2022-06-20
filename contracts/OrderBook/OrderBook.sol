@@ -20,15 +20,15 @@ contract OrderBook is Ownable {
 
 	address[] public FxPerpetuals;
 
-	uint[] public prices;
+	uint[] public TWAPs;
 	uint[] public buyHeads;
 	uint[] public sellHeads;
 	uint[] public openBuyOrders;
 	uint[] public openSellOrders;
 	uint[][] internal recentSales;
 	uint[] internal lastSalesUpdates;
-	uint[] internal salesIndecesToSet;
-	uint[] internal oracleIndeces;
+	uint[] internal salesIndicesToSet;
+	uint[] internal oracleIndices;
 
 	uint internal buyID;
 	uint internal sellID;
@@ -38,6 +38,8 @@ contract OrderBook is Ownable {
 	uint internal lastFundingRateCalculation;
 
 	uint internal fundingInterval;
+
+	int internal fundingDivisor;
 
 	mapping(uint => BuyOrder) internal buys;
 
@@ -63,31 +65,23 @@ contract OrderBook is Ownable {
 		uint Prev;
 	}
 
-	constructor(address[] memory _FxPerpetuals, uint[] memory _baseTokenInfoArray, uint[] memory _oracleIndeces,
+	constructor(address[] memory _FxPerpetuals, uint[] memory _baseTokenInfoArray, uint[] memory _oracleIndices,
 	uint[][] memory _recentSalesBaseArray, address _USD, address _Oracle) {
 		FxPerpetuals = _FxPerpetuals;
 		USD = IERC20(_USD);
 		Oracle = RateOracle(_Oracle);
-		prices = _baseTokenInfoArray;
+		TWAPs = _baseTokenInfoArray;
 		buyHeads = _baseTokenInfoArray;
 		sellHeads = _baseTokenInfoArray;
 		openBuyOrders = _baseTokenInfoArray;
 		openSellOrders = _baseTokenInfoArray;
 		lastSalesUpdates = _baseTokenInfoArray;
-		salesIndecesToSet = _baseTokenInfoArray;
-		oracleIndeces = _oracleIndeces;
+		salesIndicesToSet = _baseTokenInfoArray;
+		oracleIndices = _oracleIndices;
 		recentSales = _recentSalesBaseArray;
 		BONE = 1e18;
 		fundingInterval = 3600;
-	}
-
-	modifier calculatePrice(uint _tokenIndex) {
-		uint total;
-		for (uint i = 0; i < 5; i++) {
-			total = total.add(recentSales[_tokenIndex][i]);
-		}
-		prices[_tokenIndex] = total.div(5);
-		_;
+		fundingDivisor = 24;
 	}
 
 	modifier checkFundingRateCalculation() {
@@ -230,7 +224,7 @@ contract OrderBook is Ownable {
 		}
 	}
 
-	function marketSell(uint _tokenIndex, uint _minPrice, uint _volume) public calculatePrice(_tokenIndex) returns(uint) {
+	function marketSell(uint _tokenIndex, uint _minPrice, uint _volume) public returns(uint) {
 		IERC20 Fiat = IERC20(FxPerpetuals[_tokenIndex]);
 		require(Fiat.allowance(msg.sender, address(this)) >= _volume);
 		require(openBuyOrders[_tokenIndex] > 0);
@@ -259,7 +253,7 @@ contract OrderBook is Ownable {
 		return _volume;
 	}
 
-	function marketBuy(uint _tokenIndex, uint _maxPrice, uint _volume) public calculatePrice(_tokenIndex) returns(uint) {
+	function marketBuy(uint _tokenIndex, uint _maxPrice, uint _volume) public returns(uint) {
 		IERC20 Fiat = IERC20(FxPerpetuals[_tokenIndex]);
 		require(USD.allowance(msg.sender, address(this)) >= _maxPrice.mul(_volume));
 		require(openSellOrders[_tokenIndex] > 0);
@@ -299,7 +293,6 @@ contract OrderBook is Ownable {
 			buys[buys[_ID].Prev].Next = buys[_ID].Next;
 			buys[buys[_ID].Next].Prev = buys[_ID].Prev;
 		}
-
 		delete buys[_ID];
 	}
 
@@ -315,7 +308,6 @@ contract OrderBook is Ownable {
 			sells[sells[_ID].Prev].Next = sells[_ID].Next;
 			sells[sells[_ID].Next].Prev = sells[_ID].Prev;
 		}
-
 		delete sells[_ID];
 	}
 
@@ -334,36 +326,44 @@ contract OrderBook is Ownable {
 	}
 
 	function updateSalesList(uint _tokenIndex, uint _newDataPoint) internal checkFundingRateCalculation {
-		if (salesIndecesToSet[_tokenIndex] < 5) {
-			recentSales[_tokenIndex][salesIndecesToSet[_tokenIndex]] = _newDataPoint;
+		if (salesIndicesToSet[_tokenIndex] < recentSales[_tokenIndex].length) {
+			recentSales[_tokenIndex][salesIndicesToSet[_tokenIndex]] = _newDataPoint;
 		} else {
-			recentSales[_tokenIndex][0] = _newDataPoint;
-			salesIndecesToSet[_tokenIndex] = 1;
-			return;
+			recentSales[_tokenIndex].push(_newDataPoint);
 		}
-		salesIndecesToSet[_tokenIndex]++;
+		salesIndicesToSet[_tokenIndex]++;
 		lastSalesUpdates[_tokenIndex] = block.number;
 	}
 
 	function calculateFundingRates() internal {
 		for (uint i = 0; i < FxPerpetuals.length; i++) {
-			int safeMarkPrice = int(prices[i]);
-			int indexPrice = 0;
+			calculateTWAP(i);
+			int safeMarkPrice = int(TWAPs[i]);
+			int indexPrice = Oracle.getTWAP(oracleIndices[i]);
 			int dif = safeMarkPrice.sub(indexPrice);
-			// calculate funding rates for all perpetual contracts
+			int fundingRate = dif.div(fundingDivisor);
 			FxBase perp = FxBase(payable(FxPerpetuals[i]));
-			perp.updateDynamicMultipliers(dif);
+			perp.updateDynamicMultipliers(fundingRate);
 		}
+	}
+
+	function calculateTWAP(uint _tokenIndex) internal {
+		uint total;
+		for (uint i = 0; i < salesIndicesToSet[_tokenIndex]; i++) {
+			total = total.add(recentSales[_tokenIndex][i]);
+		}
+		TWAPs[_tokenIndex] = total.div(salesIndicesToSet[_tokenIndex]);
+		salesIndicesToSet[_tokenIndex] = 0;
 	}
 
 	function addFxPerpetual(address _perpetual, uint _oracleIndex) public onlyOwner {
 		FxPerpetuals.push(_perpetual);
-		oracleIndeces.push(_oracleIndex);
+		oracleIndices.push(_oracleIndex);
 		buyHeads.push(0);
 		sellHeads.push(0);
 		openBuyOrders.push(0);
-		prices.push(0);
-		salesIndecesToSet.push(0);
+		TWAPs.push(0);
+		salesIndicesToSet.push(0);
 		lastSalesUpdates.push(0);
 		recentSales.push([0, 0, 0, 0, 0]);
 	}

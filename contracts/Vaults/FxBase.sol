@@ -64,7 +64,6 @@ contract FxBase is ERC20 {
 			_collateralIndex,
 			0,
 			0,
-			0,
 			vaultID	
 		);
 		Vaults[vault.ID] = vault;
@@ -121,17 +120,15 @@ contract FxBase is ERC20 {
 		collateral.transfer(msg.sender, vault.Collateral);
 		vault.Collateral = 0;
 		vault.Debt = 0;
-		vault.DynamicDebt = 0;
 		isClosed[_vaultID] = true;
 	}
 
 	function detectLiquidation(uint _vaultID) internal virtual view returns(bool success) {
 		Vault memory vault = Vaults[_vaultID];
-		uint dynamicDebt = vault.Debt.mul(DYNAMIC_BALANCE_MULTIPLIER).div(BONE)
+		uint dynamicDebt = vault.Debt.mul(DYNAMIC_BALANCE_MULTIPLIER).div(BONE);
 		uint debt = convertTokenDenomintation(debtTokenIndex, dynamicDebt);
 		uint collateral = convertTokenDenomintation(vault.CollateralIndex, vault.Collateral);
 		success = debt.mul(BONE).div(collateral) <= MIN_DEBT_RATIO && (collateral != 0 && debt != 0);
-
 	}
 
 	function convertTokenDenomintation(uint _tokenIndex, uint _amount) internal view returns(uint _price) {

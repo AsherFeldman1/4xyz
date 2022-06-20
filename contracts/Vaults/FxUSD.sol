@@ -15,26 +15,24 @@ contract FxUSD is FxBase {
 	function withdraw(uint _vaultID, uint _amount) external override onlyVaultOwner(_vaultID) {
 		Vault storage vault = Vaults[_vaultID];
 		uint newCollateral = convertTokenDenomintation(vault.CollateralIndex, vault.Collateral.sub(_amount));
-		require(vault.Debt.mul(BONE).div(newCollateral) > MIN_DEBT_RATIO);
+		uint debt = vault.Debt.mul(DYNAMIC_BALANCE_MULTIPLIER).div(BONE);
+		require(debt.mul(BONE).div(newCollateral) > MIN_DEBT_RATIO);
 		vault.Collateral = vault.Collateral.sub(_amount);
 	}
 
 	function borrow(uint _vaultID, uint _amount) external override onlyVaultOwner(_vaultID) {
 		Vault storage vault = Vaults[_vaultID];
 		uint newDebt = vault.Debt.add(_amount);
+		uint dynamicNewDebt = newDebt.mul(DYNAMIC_BALANCE_MULTIPLIER).div(BONE);
 		uint collateral = convertTokenDenomintation(vault.CollateralIndex, vault.Collateral);
-		require(newDebt.mul(BONE).div(collateral) > MIN_DEBT_RATIO);
+		require(dynamicNewDebt.mul(BONE).div(collateral) > MIN_DEBT_RATIO);
+		vault.Debt = newDebt;
 		_mint(msg.sender, _amount);
-		vault.Debt = vault.Debt.add(_amount);
 	}
 
-	function detectLiquidation(uint _vaultID) internal view override returns(bool) {
+	function detectLiquidation(uint _vaultID) internal view override returns(bool success) {
 		Vault memory vault = Vaults[_vaultID];
 		uint collateral = convertTokenDenomintation(vault.CollateralIndex, vault.Collateral);
-		if (vault.Debt.mul(BONE).div(collateral) <= MIN_DEBT_RATIO && (collateral != 0 && vault.Debt != 0)) {
-			return true;
-		} else {
-			return false;
-		}
+		success = vault.Debt.mul(BONE).div(collateral) <= MIN_DEBT_RATIO && (collateral != 0 && vault.Debt != 0);
 	}
 }

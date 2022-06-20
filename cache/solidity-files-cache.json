@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/chayf/4xyz/contracts/OrderBook/OrderBook.sol": {
-      "lastModificationDate": 1655353906695,
-      "contentHash": "bd186fbc65335462dc6290abbce2e875",
+      "lastModificationDate": 1655759306629,
+      "contentHash": "1d7f2bffe97282eef04705228778c6cf",
       "sourceName": "contracts/OrderBook/OrderBook.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -186,8 +186,8 @@
       ]
     },
     "/home/chayf/4xyz/contracts/Vaults/RateOracle.sol": {
-      "lastModificationDate": 1655168637920,
-      "contentHash": "f61243ea5b1395403baa74bad27eb480",
+      "lastModificationDate": 1655758407046,
+      "contentHash": "49ecee90c4e1959bc02aa3a01d8627c3",
       "sourceName": "contracts/Vaults/RateOracle.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -212,10 +212,7 @@
           }
         }
       },
-      "imports": [
-        "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol",
-        "@openzeppelin/contracts/access/Ownable.sol"
-      ],
+      "imports": [],
       "versionPragmas": [
         "^0.8.4"
       ],
@@ -224,8 +221,8 @@
       ]
     },
     "/home/chayf/4xyz/contracts/Vaults/FxBase.sol": {
-      "lastModificationDate": 1655405767939,
-      "contentHash": "c6b3f4f58d7a6f62ab5d2280852a1053",
+      "lastModificationDate": 1655757493341,
+      "contentHash": "e887dd5a1b3fe4c39277807f85461a5d",
       "sourceName": "contracts/Vaults/FxBase.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -410,8 +407,8 @@
       ]
     },
     "/home/chayf/4xyz/contracts/Vaults/FxUSD.sol": {
-      "lastModificationDate": 1655343087337,
-      "contentHash": "6356eb61ef8c7af416bc016bcf8a7741",
+      "lastModificationDate": 1655755162524,
+      "contentHash": "d0f76dd6dd13b910938a2c46a3105517",
       "sourceName": "contracts/Vaults/FxUSD.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -445,43 +442,6 @@
       ],
       "artifacts": [
         "FxUSD"
-      ]
-    },
-    "/home/chayf/4xyz/contracts/Vaults/FxFiat.sol": {
-      "lastModificationDate": 1655167979463,
-      "contentHash": "09fd9baa409d2da53b806b8b58c4f50a",
-      "sourceName": "contracts/Vaults/FxFiat.sol",
-      "solcConfig": {
-        "version": "0.8.4",
-        "settings": {
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "./FxBase.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.4"
-      ],
-      "artifacts": [
-        "FxAUD"
       ]
     }
   }
