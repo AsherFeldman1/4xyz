@@ -342,8 +342,15 @@ contract OrderBook is Ownable {
 			int indexPrice = Oracle.getTWAP(oracleIndices[i]);
 			int dif = safeMarkPrice.sub(indexPrice);
 			int fundingRate = dif.div(fundingDivisor);
+			uint absRate = abs(fundingRate);
+			uint boneRate = BONE;
+			if (fundingRate < 0) {
+				boneRate = boneRate.sub(absRate);
+			} else {
+				boneRate = boneRate.add(absRate);
+			}
 			FxBase perp = FxBase(payable(FxPerpetuals[i]));
-			perp.updateDynamicMultipliers(fundingRate);
+			perp.updateDynamicMultiplier(boneRate);
 		}
 	}
 

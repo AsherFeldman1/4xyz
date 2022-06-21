@@ -28,7 +28,8 @@ contract FxBase is ERC20 {
 
 	RateOracle internal oracle;
 
-	mapping(uint => Vault) public Vaults;
+	Vault[] public Vaults;
+
 	mapping(uint => bool) public isClosed;
 
 	struct Vault {
@@ -45,6 +46,7 @@ contract FxBase is ERC20 {
 		debtTokenIndex = _debtTokenIndex;
 		collateralWhitelist = _collateralWhitelist;
 		BONE = 1e18;
+		DYNAMIC_BALANCE_MULTIPLIER = 1e18;
 		MIN_DEBT_RATIO = 1e17;
 		owner = msg.sender;
 		OrderBook = _OrderBook;
@@ -55,6 +57,11 @@ contract FxBase is ERC20 {
 	modifier onlyVaultOwner(uint _vaultID) {
 		Vault memory vault = Vaults[_vaultID];
 		require(msg.sender == vault.Owner);
+		_;
+	}
+
+	modifier vaultNotClosed(uint _vaultID) {
+		require(!isClosed[_vaultID]);
 		_;
 	}
 
@@ -71,14 +78,14 @@ contract FxBase is ERC20 {
 		return vault.ID;
 	}
 
-	function supply(uint _vaultID, uint _amount) external {
+	function supply(uint _vaultID, uint _amount) external vaultNotClosed(_vaultID) {
 		Vault storage vault = Vaults[_vaultID];
 		IERC20 collateral = IERC20(collateralWhitelist[vault.CollateralIndex]);
 		require(collateral.transferFrom(msg.sender, address(this), _amount));
 		vault.Collateral = vault.Collateral.add(_amount);
 	}
 
-	function withdraw(uint _vaultID, uint _amount) external virtual onlyVaultOwner(_vaultID) {
+	function withdraw(uint _vaultID, uint _amount) external virtual onlyVaultOwner(_vaultID) vaultNotClosed(_vaultID) {
 		Vault storage vault = Vaults[_vaultID];
 		uint debt = convertTokenDenomintation(debtTokenIndex, vault.Debt.mul(DYNAMIC_BALANCE_MULTIPLIER).div(BONE));
 		uint newCollateral = convertTokenDenomintation(vault.CollateralIndex, vault.Collateral.sub(_amount));
@@ -86,7 +93,7 @@ contract FxBase is ERC20 {
 		vault.Collateral = vault.Collateral.sub(_amount);
 	}
 
-	function borrow(uint _vaultID, uint _amount) external virtual onlyVaultOwner(_vaultID) {
+	function borrow(uint _vaultID, uint _amount) external virtual onlyVaultOwner(_vaultID) vaultNotClosed(_vaultID) {
 		Vault storage vault = Vaults[_vaultID];
 		uint newDebt = convertTokenDenomintation(debtTokenIndex, vault.Debt.add(_amount));
 		uint dynamicNewDebt = newDebt.mul(DYNAMIC_BALANCE_MULTIPLIER).div(BONE);
@@ -96,19 +103,19 @@ contract FxBase is ERC20 {
 		_mint(msg.sender, _amount);
 	}
 
-	function repay(uint _vaultID, uint _amount) external {
+	function repay(uint _vaultID, uint _amount) external vaultNotClosed(_vaultID) {
 		Vault storage vault = Vaults[_vaultID];
 		uint dynamicAmount = _amount.mul(BONE).div(DYNAMIC_BALANCE_MULTIPLIER);
 		vault.Debt = vault.Debt.sub(dynamicAmount);
 		_burn(msg.sender, _amount);
 	}
 
-	function closePosition(uint _vaultID) external onlyVaultOwner(vaultID) {
+	function closePosition(uint _vaultID) external onlyVaultOwner(vaultID) vaultNotClosed(_vaultID) {
 		require(!detectLiquidation(_vaultID));
 		_close(_vaultID);
 	}
 
-	function liquidate(uint _vaultID) external {
+	function liquidate(uint _vaultID) external vaultNotClosed(_vaultID) {
 		require(detectLiquidation(_vaultID));
 		_close(_vaultID);
 	}
@@ -118,8 +125,7 @@ contract FxBase is ERC20 {
 		IERC20 collateral = IERC20(collateralWhitelist[vault.CollateralIndex]);
 		require(transferFrom(msg.sender, address(this), vault.Debt.mul(DYNAMIC_BALANCE_MULTIPLIER).div(BONE)));
 		collateral.transfer(msg.sender, vault.Collateral);
-		vault.Collateral = 0;
-		vault.Debt = 0;
+		delete Vaults[_vaultID];
 		isClosed[_vaultID] = true;
 	}
 
@@ -141,9 +147,10 @@ contract FxBase is ERC20 {
 		collateralWhitelist.push(_collateral);
 	}
 
-	function updateDynamicMultipliers(int _fundingRate) external {
+	function updateDynamicMultiplier(uint _fundingRate) external {
 		require(msg.sender == OrderBook);
-		
+		uint inflatedMultiplier = DYNAMIC_BALANCE_MULTIPLIER.mul(_fundingRate);
+		DYNAMIC_BALANCE_MULTIPLIER = inflatedMultiplier.div(BONE);
 	}
 
 	function _transfer(address from, address to, uint amount) internal override {

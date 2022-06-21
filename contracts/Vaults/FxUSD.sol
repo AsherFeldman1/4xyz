@@ -12,7 +12,7 @@ contract FxUSD is FxBase {
 	constructor(address[] memory _collateralWhitelist, address _oracle, address _OrderBook, uint _debtTokenIndex, string memory _name, string memory _symbol)
 		FxBase(_collateralWhitelist, _oracle, _OrderBook, _debtTokenIndex, _name, _symbol) {}
 
-	function withdraw(uint _vaultID, uint _amount) external override onlyVaultOwner(_vaultID) {
+	function withdraw(uint _vaultID, uint _amount) external override onlyVaultOwner(_vaultID) vaultNotClosed(_vaultID) {
 		Vault storage vault = Vaults[_vaultID];
 		uint newCollateral = convertTokenDenomintation(vault.CollateralIndex, vault.Collateral.sub(_amount));
 		uint debt = vault.Debt.mul(DYNAMIC_BALANCE_MULTIPLIER).div(BONE);
@@ -20,7 +20,7 @@ contract FxUSD is FxBase {
 		vault.Collateral = vault.Collateral.sub(_amount);
 	}
 
-	function borrow(uint _vaultID, uint _amount) external override onlyVaultOwner(_vaultID) {
+	function borrow(uint _vaultID, uint _amount) external override onlyVaultOwner(_vaultID) vaultNotClosed(_vaultID) {
 		Vault storage vault = Vaults[_vaultID];
 		uint newDebt = vault.Debt.add(_amount);
 		uint dynamicNewDebt = newDebt.mul(DYNAMIC_BALANCE_MULTIPLIER).div(BONE);
