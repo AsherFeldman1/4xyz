@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/math/SignedSafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../Vaults/RateOracle.sol";
-import "../Vaults/FxBase.sol";
+import "../Vaults/FxVaults.sol";
 
 contract OrderBook is Ownable {
 	
@@ -19,6 +19,7 @@ contract OrderBook is Ownable {
 	RateOracle internal Oracle;
 
 	address[] public FxPerpetuals;
+	address[] public Vaults;
 
 	uint[] public TWAPs;
 	uint[] public buyHeads;
@@ -65,9 +66,10 @@ contract OrderBook is Ownable {
 		uint Prev;
 	}
 
-	constructor(address[] memory _FxPerpetuals, uint[] memory _baseTokenInfoArray, uint[] memory _oracleIndices,
-	uint[][] memory _recentSalesBaseArray, address _USD, address _Oracle) {
+	constructor(address[] memory _FxPerpetuals, address[] memory _Vaults, uint[] memory _baseTokenInfoArray, uint[] memory _oracleIndices,
+	address _USD, address _Oracle) {
 		FxPerpetuals = _FxPerpetuals;
+		Vaults = _Vaults;
 		USD = IERC20(_USD);
 		Oracle = RateOracle(_Oracle);
 		TWAPs = _baseTokenInfoArray;
@@ -78,7 +80,6 @@ contract OrderBook is Ownable {
 		lastSalesUpdates = _baseTokenInfoArray;
 		salesIndicesToSet = _baseTokenInfoArray;
 		oracleIndices = _oracleIndices;
-		recentSales = _recentSalesBaseArray;
 		BONE = 1e18;
 		fundingInterval = 3600;
 		fundingDivisor = 24;
@@ -92,7 +93,7 @@ contract OrderBook is Ownable {
 	}
 
 	function limitBuy(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public {
-		require(USD.allowance(msg.sender, address(this)) >= _volume.mul(_price));
+		require(USD.allowance(msg.sender, address(this)) >= _volume.mul(_price).div(BONE));
 		uint newVolume;
 		if (openSellOrders[_tokenIndex] > 0) {
 			newVolume = marketBuy(_tokenIndex, _price, _volume);
@@ -159,7 +160,7 @@ contract OrderBook is Ownable {
 
 	function limitSell(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public {
 		IERC20 Fiat = IERC20(FxPerpetuals[_tokenIndex]);
-		require(Fiat.allowance(msg.sender, address(this)) >= _volume.mul(_price));
+		require(Fiat.allowance(msg.sender, address(this)) >= _volume.mul(_price).div(BONE));
 		uint newVolume;
 		if (openBuyOrders[_tokenIndex] > 0) {
 			newVolume = marketSell(_tokenIndex, _price, _volume);
@@ -232,7 +233,7 @@ contract OrderBook is Ownable {
 		while (_volume > 0 && buys[curr].Price > _minPrice) {
 			BuyOrder storage currOrder = buys[curr];
 			if (currOrder.Volume >= _volume) {
-				USD.transfer(msg.sender, _volume.mul(currOrder.Price));
+				USD.transfer(msg.sender, _volume.mul(currOrder.Price).div(BONE));
 				Fiat.transferFrom(msg.sender, currOrder.Maker, _volume);
 				currOrder.Volume = currOrder.Volume.sub(_volume);
 				if (currOrder.Volume == 0) {
@@ -243,7 +244,7 @@ contract OrderBook is Ownable {
 				}
 				return 0;
 			} else {
-				USD.transfer(msg.sender, currOrder.Volume.mul(currOrder.Price));
+				USD.transfer(msg.sender, currOrder.Volume.mul(currOrder.Price).div(BONE));
 				Fiat.transferFrom(msg.sender, currOrder.Maker, currOrder.Volume);
 				_volume = _volume.sub(currOrder.Volume);
 
@@ -261,7 +262,7 @@ contract OrderBook is Ownable {
 		while (_volume > 0 && sells[curr].Price < _maxPrice) {
 			SellOrder storage currOrder = sells[curr];
 			if (currOrder.Volume >= _volume) {
-				USD.transferFrom(msg.sender, currOrder.Maker, _volume.mul(currOrder.Price));
+				USD.transferFrom(msg.sender, currOrder.Maker, _volume.mul(currOrder.Price).div(BONE));
 				Fiat.transfer(msg.sender, _volume);
 				currOrder.Volume = currOrder.Volume.sub(_volume);
 				if (currOrder.Volume == 0) {
@@ -272,7 +273,7 @@ contract OrderBook is Ownable {
 				}
 				return 0;
 			} else {
-				USD.transferFrom(msg.sender, currOrder.Maker, currOrder.Volume.mul(currOrder.Price));
+				USD.transferFrom(msg.sender, currOrder.Maker, currOrder.Volume.mul(currOrder.Price).div(BONE));
 				Fiat.transfer(msg.sender, currOrder.Volume);
 				_volume = _volume.sub(currOrder.Volume);
 				delete sells[curr];
@@ -342,15 +343,10 @@ contract OrderBook is Ownable {
 			int indexPrice = Oracle.getTWAP(oracleIndices[i]);
 			int dif = safeMarkPrice.sub(indexPrice);
 			int fundingRate = dif.div(fundingDivisor);
-			uint absRate = abs(fundingRate);
-			uint boneRate = BONE;
-			if (fundingRate < 0) {
-				boneRate = boneRate.sub(absRate);
-			} else {
-				boneRate = boneRate.add(absRate);
-			}
-			FxBase perp = FxBase(payable(FxPerpetuals[i]));
-			perp.updateDynamicMultiplier(boneRate);
+			int boneRate = int(BONE);
+			boneRate = boneRate.add(fundingRate);
+			FxVaults vaults = FxVaults(payable(FxPerpetuals[i]));
+			vaults.updateDynamicMultiplier(uint(boneRate));
 		}
 	}
 
@@ -363,8 +359,9 @@ contract OrderBook is Ownable {
 		salesIndicesToSet[_tokenIndex] = 0;
 	}
 
-	function addFxPerpetual(address _perpetual, uint _oracleIndex) public onlyOwner {
+	function addFxPerpetual(address _perpetual, address _vault, uint _oracleIndex) public onlyOwner {
 		FxPerpetuals.push(_perpetual);
+		Vaults.push(_vault);
 		oracleIndices.push(_oracleIndex);
 		buyHeads.push(0);
 		sellHeads.push(0);
@@ -373,10 +370,5 @@ contract OrderBook is Ownable {
 		salesIndicesToSet.push(0);
 		lastSalesUpdates.push(0);
 		recentSales.push([0, 0, 0, 0, 0]);
-	}
-
-	function abs(int x) private pure returns (uint) {
-	    int intX = x >= 0 ? x : -x;
-	    return(uint(intX));
 	}
 }

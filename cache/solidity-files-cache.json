@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/chayf/4xyz/contracts/OrderBook/OrderBook.sol": {
-      "lastModificationDate": 1655836961576,
-      "contentHash": "428b3bc0fa658e037a04c4631c5510d7",
+      "lastModificationDate": 1656297289866,
+      "contentHash": "ba84c3a7217ccb61bf86f8683b9cc82a",
       "sourceName": "contracts/OrderBook/OrderBook.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -34,7 +34,7 @@
         "@openzeppelin/contracts/token/ERC20/IERC20.sol",
         "@openzeppelin/contracts/access/Ownable.sol",
         "../Vaults/RateOracle.sol",
-        "../Vaults/FxBase.sol"
+        "../Vaults/FxVaults.sol"
       ],
       "versionPragmas": [
         "^0.8.4"
@@ -186,8 +186,8 @@
       ]
     },
     "/home/chayf/4xyz/contracts/Vaults/RateOracle.sol": {
-      "lastModificationDate": 1655837260391,
-      "contentHash": "fad39789b4ce26f9e4a77c26e1e3e3f3",
+      "lastModificationDate": 1656371187126,
+      "contentHash": "fab25589cb8e9bdffa9fb68acf707fdf",
       "sourceName": "contracts/Vaults/RateOracle.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -218,46 +218,6 @@
       ],
       "artifacts": [
         "RateOracle"
-      ]
-    },
-    "/home/chayf/4xyz/contracts/Vaults/FxBase.sol": {
-      "lastModificationDate": 1655836815022,
-      "contentHash": "d486be44fe321401267ec8a904731e1c",
-      "sourceName": "contracts/Vaults/FxBase.sol",
-      "solcConfig": {
-        "version": "0.8.4",
-        "settings": {
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "@openzeppelin/contracts/utils/math/SafeMath.sol",
-        "./RateOracle.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.4"
-      ],
-      "artifacts": [
-        "FxBase"
       ]
     },
     "/home/chayf/4xyz/node_modules/@openzeppelin/contracts/utils/Context.sol": {
@@ -331,8 +291,8 @@
       ]
     },
     "/home/chayf/4xyz/node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": {
-      "lastModificationDate": 1655405830333,
-      "contentHash": "f95f8b6b2985e0f761183b1243a6ddbe",
+      "lastModificationDate": 1656384376025,
+      "contentHash": "eadb8586af485da5f37f1e2f7ffd1f4c",
       "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -406,10 +366,10 @@
         "IERC20Metadata"
       ]
     },
-    "/home/chayf/4xyz/contracts/Vaults/FxUSD.sol": {
-      "lastModificationDate": 1655760452777,
-      "contentHash": "c42bc941e4aad9eba71b12c294ab7fef",
-      "sourceName": "contracts/Vaults/FxUSD.sol",
+    "/home/chayf/4xyz/contracts/Vaults/FxVaults.sol": {
+      "lastModificationDate": 1656384411545,
+      "contentHash": "f0280feb47ef49c73dfa1dfe1aaef4c3",
+      "sourceName": "contracts/Vaults/FxVaults.sol",
       "solcConfig": {
         "version": "0.8.4",
         "settings": {
@@ -434,14 +394,172 @@
         }
       },
       "imports": [
-        "./FxBase.sol",
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/utils/math/SafeMath.sol",
+        "./RateOracle.sol",
+        "./FxPerpStatic.sol",
+        "./FxPerpDynamic.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.4"
+      ],
+      "artifacts": [
+        "FxVaults"
+      ]
+    },
+    "/home/chayf/4xyz/contracts/Vaults/FxPerpStatic.sol": {
+      "lastModificationDate": 1656541204375,
+      "contentHash": "02daf0f9b219e5697de04e7c55a4a21a",
+      "sourceName": "contracts/Vaults/FxPerpStatic.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "@openzeppelin/contracts/utils/math/SafeMath.sol",
+        "./FxVaults.sol",
+        "./FxPerpDynamic.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.4"
+      ],
+      "artifacts": [
+        "FxPerpStatic"
+      ]
+    },
+    "/home/chayf/4xyz/contracts/Vaults/FxPerpDynamic.sol": {
+      "lastModificationDate": 1656541566832,
+      "contentHash": "95653bdba11b20fc9cd5852c775695d9",
+      "sourceName": "contracts/Vaults/FxPerpDynamic.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "@openzeppelin/contracts/utils/math/SafeMath.sol",
+        "./FxVaults.sol",
+        "./FxPerpStatic.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.4"
+      ],
+      "artifacts": [
+        "FxPerpDynamic"
+      ]
+    },
+    "/home/chayf/4xyz/contracts/Vaults/FxUSDVaults.sol": {
+      "lastModificationDate": 1656542218437,
+      "contentHash": "528657c785f7b694c68b10ac8af7813f",
+      "sourceName": "contracts/Vaults/FxUSDVaults.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./FxVaults.sol",
         "@openzeppelin/contracts/utils/math/SafeMath.sol"
       ],
       "versionPragmas": [
         "^0.8.4"
       ],
       "artifacts": [
-        "FxUSD"
+        "FxUSDVaults"
+      ]
+    },
+    "/home/chayf/4xyz/contracts/dummy/DummyToken.sol": {
+      "lastModificationDate": 1656126767943,
+      "contentHash": "10084a85bbb9a0986613ccf132f68147",
+      "sourceName": "contracts/dummy/DummyToken.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.4"
+      ],
+      "artifacts": [
+        "DummyToken"
       ]
     }
   }
