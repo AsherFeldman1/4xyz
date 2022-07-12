@@ -4,7 +4,7 @@ const BN = ethers.BigNumber;
 const BONE = BN.from(10).pow(BN.from(18));
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-describe("Vaults", function () {
+describe("USD Vaults", function () {
 
   it("0 should equal 0", async function () {
     expect(0).to.equal(0);
@@ -22,7 +22,7 @@ describe("Vaults", function () {
     const Dynamic = await ethers.getContractFactory("FxPerpDynamic");
     dynamicInstance = await Dynamic.deploy("Dynamic", "DYN", vaultsInstance.address, staticInstance.address)
     const OrderBook = await ethers.getContractFactory("OrderBook");
-    orderBookInstance = await OrderBook.deploy([dynamicInstance.address], [vaultsInstance.address], [0], [0], dummyInstance.address, oracleInstance.address);
+    orderBookInstance = await OrderBook.deploy([dynamicInstance.address], [vaultsInstance.address], [0], dummyInstance.address, oracleInstance.address);
     await staticInstance.setDynamic(dynamicInstance.address);
     await vaultsInstance.setState(staticInstance.address, dynamicInstance.address, orderBookInstance.address);
     accounts = await ethers.getSigners();
@@ -156,5 +156,4 @@ describe("Vaults", function () {
     expect(await dummyInstance.balanceOf(accounts[2].address)).to.equal(10);
     expect(await staticInstance.balanceOf(accounts[2].address)).to.equal(0);
   });
-
 });

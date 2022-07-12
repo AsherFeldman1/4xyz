@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "./RateOracle.sol";
+import "../RateOracle.sol";
 import "./FxPerpStatic.sol";
 import "./FxPerpDynamic.sol";
 
@@ -91,7 +91,7 @@ contract FxVaults {
 		return vault.ID;
 	}
 
-	function getVault(uint _index) external view returns(address vaultOwner, uint collateralIndex, uint collateral , uint debt, uint id) {
+	function getVault(uint _index) external view returns(address vaultOwner, uint collateralIndex, uint collateral, uint debt, uint id) {
 		Vault memory vault = Vaults[_index];
 		return (vault.Owner, vault.CollateralIndex, vault.Collateral, vault.Debt, vault.ID);
 	}
