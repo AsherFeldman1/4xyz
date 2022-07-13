@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./FxVaults.sol";
 import "./FxPerpStatic.sol";
+import "hardhat/console.sol";
 
 contract FxPerpDynamic is ERC20 {
 

@@ -26,12 +26,12 @@ contract OrderBook is Ownable {
 	mapping(uint => uint) public sellHeads;
 	mapping(uint => uint) public openBuyOrders;
 	mapping(uint => uint) public openSellOrders;
-	mapping(uint => uint) internal priceCumulative;
-	mapping(uint => uint) internal lastPriceCumulative;
-	mapping(uint => uint) internal totalPriceDataPoints;
-	mapping(uint => uint) internal lastCumulativePriceUpdate;
+	mapping(uint => uint) public priceCumulative;
+	mapping(uint => uint) public lastPriceCumulative;
+	mapping(uint => uint) public totalPriceDataPoints;
+	mapping(uint => uint) public lastCumulativePriceUpdate;
 
-	uint internal constant CUMULATIVE_UPDATE_THRESHOLD = 10;
+	uint internal constant CUMULATIVE_UPDATE_THRESHOLD = 30;
 	
 	uint[] internal oracleIndices;
 
@@ -242,11 +242,11 @@ contract OrderBook is Ownable {
 				USD.transfer(msg.sender, _volume.mul(currOrder.Price).div(BONE));
 				Fiat.transferFrom(msg.sender, currOrder.Maker, _volume);
 				currOrder.Volume = currOrder.Volume.sub(_volume);
-				if (currOrder.Volume == 0) {
-					_deleteBuy(curr);
-				}
 				if (block.timestamp > lastCumulativePriceUpdate[_tokenIndex].add(CUMULATIVE_UPDATE_THRESHOLD)) {
 					_updatePriceCumulative(_tokenIndex, currOrder.Price);
+				}
+				if (currOrder.Volume == 0) {
+					_deleteBuy(curr);
 				}
 				return 0;
 			} else {
@@ -272,11 +272,11 @@ contract OrderBook is Ownable {
 				USD.transferFrom(msg.sender, currOrder.Maker, _volume.mul(currOrder.Price).div(BONE));
 				Fiat.transfer(msg.sender, _volume);
 				currOrder.Volume = currOrder.Volume.sub(_volume);
-				if (currOrder.Volume == 0) {
-					_deleteSell(curr);
-				}
 				if (block.timestamp > lastCumulativePriceUpdate[_tokenIndex].add(CUMULATIVE_UPDATE_THRESHOLD)) {
 					_updatePriceCumulative(_tokenIndex, currOrder.Price);
+				}
+				if (currOrder.Volume == 0) {
+					_deleteSell(curr);
 				}
 				return 0;
 			} else {
@@ -396,6 +396,7 @@ contract OrderBook is Ownable {
 	function _updatePriceCumulative(uint _tokenIndex, uint _newDataPoint) internal checkFundingRateCalculation {
 		priceCumulative[_tokenIndex] = priceCumulative[_tokenIndex].add(_newDataPoint);
 		totalPriceDataPoints[_tokenIndex]++;
+		lastCumulativePriceUpdate[_tokenIndex] = block.timestamp;
 	}
 
 	function _calculateFundingRates() internal {
@@ -415,6 +416,7 @@ contract OrderBook is Ownable {
 		uint difference = priceCumulative[_tokenIndex].sub(lastPriceCumulative[_tokenIndex]);
 		uint twap = difference.div(totalPriceDataPoints[_tokenIndex]);
 		totalPriceDataPoints[_tokenIndex] = 0;
+		priceCumulative[_tokenIndex] = 0;
 		lastPriceCumulative[_tokenIndex] = priceCumulative[_tokenIndex];
 		return twap;
 	}
