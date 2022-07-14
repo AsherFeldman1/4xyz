@@ -2,18 +2,19 @@
 
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/math/SignedSafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SignedSafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../RateOracle.sol";
 import "../Vaults/FxVaults.sol";
 import "hardhat/console.sol";
 
-contract OrderBook is Ownable {
+contract OrderBook is Initializable, OwnableUpgradeable {
 	
-	using SafeMath for uint256;
-	using SignedSafeMath for int256;
+	using SafeMathUpgradeable for uint256;
+	using SignedSafeMathUpgradeable for int256;
 
 	IERC20 internal USD;
 
@@ -33,7 +34,7 @@ contract OrderBook is Ownable {
 
 	uint internal constant CUMULATIVE_UPDATE_THRESHOLD = 30;
 	
-	uint[] internal oracleIndices;
+	bytes32[] internal priceFeedKeys;
 
 	uint public buyID;
 	uint public sellID;
@@ -70,17 +71,20 @@ contract OrderBook is Ownable {
 		uint Prev;
 	}
 
-	constructor(address[] memory _FxPerpetuals, address[] memory _Vaults, uint[] memory _oracleIndices,
-	address _USD, address _Oracle) {
+	uint[50] private __gap;
+
+	function initialize(address[] memory _FxPerpetuals, address[] memory _Vaults, bytes32[] memory _priceFeedKeys,
+	address _USD, address _Oracle) public initializer {
 		FxPerpetuals = _FxPerpetuals;
 		Vaults = _Vaults;
 		USD = IERC20(_USD);
 		Oracle = RateOracle(_Oracle);
-		oracleIndices = _oracleIndices;
+		priceFeedKeys = _priceFeedKeys;
 		BONE = 1e18;
 		fundingInterval = 3600;
 		fundingDivisor = 24;
 		lastFundingRateCalculation = block.timestamp;
+		OwnableUpgradeable.__Ownable_init();
 	}
 
 	modifier checkFundingRateCalculation() {
@@ -402,7 +406,7 @@ contract OrderBook is Ownable {
 	function _calculateFundingRates() internal {
 		for (uint i = 0; i < Vaults.length; i++) {
 			int safeMarkPrice = int(_calculateTWAP(i));
-			int indexPrice = Oracle.getTWAP(oracleIndices[i]);
+			int indexPrice = int(Oracle.getTwapPrice(priceFeedKeys[i], fundingInterval));
 			int dif = safeMarkPrice.sub(indexPrice);
 			int fundingRate = dif.div(fundingDivisor);
 			int boneRate = int(BONE);
@@ -421,9 +425,9 @@ contract OrderBook is Ownable {
 		return twap;
 	}
 
-	function addFxPerpetual(address _perpetual, address _vault, uint _oracleIndex) external onlyOwner {
+	function addFxPerpetual(address _perpetual, address _vault, bytes32 _priceFeedKey) external onlyOwner {
 		FxPerpetuals.push(_perpetual);
 		Vaults.push(_vault);
-		oracleIndices.push(_oracleIndex);
+		priceFeedKeys.push(_priceFeedKey);
 	}
 }

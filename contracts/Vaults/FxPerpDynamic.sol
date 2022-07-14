@@ -2,15 +2,16 @@
 
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./FxVaults.sol";
 import "./FxPerpStatic.sol";
 import "hardhat/console.sol";
 
-contract FxPerpDynamic is ERC20 {
+contract FxPerpDynamic is Initializable, ERC20Upgradeable {
 
-	using SafeMath for uint256;
+	using SafeMathUpgradeable for uint256;
 
 	address internal vaults;
 
@@ -20,11 +21,14 @@ contract FxPerpDynamic is ERC20 {
 
 	uint internal BONE;
 
-	constructor(string memory _name, string memory _symbol, address _vaults, address _perpStatic) ERC20(_name, _symbol) {
+	uint[50] private __gap;
+
+	function initialize(string memory _name, string memory _symbol, address _vaults, address _perpStatic) public initializer {
 		vaults = _vaults;
 		perpStatic = FxPerpStatic(_perpStatic);
 		BONE = 1e18;
 		DYNAMIC_BALANCE_MULTIPLIER = 1e18;
+		ERC20Upgradeable.__ERC20_init(_name, _symbol);
 	}
 
 	function mint(address _account, uint _amount) external {

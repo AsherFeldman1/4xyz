@@ -3,14 +3,15 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../RateOracle.sol";
 import "./FxPerpStatic.sol";
 import "./FxPerpDynamic.sol";
 
-contract FxVaults {
+contract FxVaults is Initializable {
 
-	using SafeMath for uint256;
+	using SafeMathUpgradeable for uint256;
 
 	uint internal vaultID;
 
@@ -22,6 +23,7 @@ contract FxVaults {
 	uint public DYNAMIC_DEBT_MULTIPLIER;
 
 	address[] public collateralWhitelist;
+	bytes32[] public priceFeedKeys;
 
 	address public owner;
 
@@ -47,10 +49,14 @@ contract FxVaults {
 		uint ID;
 	}
 
-	constructor(address[] memory _collateralWhitelist, address _oracle, uint _debtTokenIndex) {
+	uint[50] private __gap;
+
+	function initialize(address[] memory _collateralWhitelist, bytes32[] memory _priceFeedKeys,
+	 address _oracle, uint _debtTokenIndex) public virtual onlyInitializing {
 		oracle = RateOracle(_oracle);
 		debtTokenIndex = _debtTokenIndex;
 		collateralWhitelist = _collateralWhitelist;
+		priceFeedKeys = _priceFeedKeys;
 		BONE = 1e18;
 		DYNAMIC_DEBT_MULTIPLIER = 1e18;
 		MAX_DEBT_RATIO = 9e17;
@@ -79,6 +85,7 @@ contract FxVaults {
 	}
 
 	function openVault(uint _collateralIndex) external returns(uint) {
+		require(_collateralIndex < collateralWhitelist.length);
 		Vault memory vault = Vault(
 			msg.sender,
 			_collateralIndex,
@@ -162,7 +169,7 @@ contract FxVaults {
 	}
 
 	function convertTokenDenomintation(uint _tokenIndex, uint _amount) internal view returns(uint _price) {
-		uint price = uint(oracle.getPrice(_tokenIndex));
+		uint price = uint(oracle.getPrice(priceFeedKeys[_tokenIndex]));
 		_price = price == 0 ? 0 : price.mul(_amount).div(BONE);
 	}
 

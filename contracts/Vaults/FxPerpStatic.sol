@@ -2,12 +2,13 @@
 
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./FxVaults.sol";
 import "./FxPerpDynamic.sol";
 
-contract FxPerpStatic is ERC20 {
+contract FxPerpStatic is Initializable, ERC20Upgradeable {
 
 	address internal vaults;
 
@@ -15,8 +16,11 @@ contract FxPerpStatic is ERC20 {
 
 	bool internal set;
 
-	constructor(string memory _name, string memory _symbol, address _vaults) ERC20(_name, _symbol) {
+	uint[50] private __gap;
+
+	function initialize(string memory _name, string memory _symbol, address _vaults) public initializer {
 		vaults = _vaults;
+		ERC20Upgradeable.__ERC20_init(_name, _symbol);
 	}
 
 	function setDynamic(address _perpDynamic) external {

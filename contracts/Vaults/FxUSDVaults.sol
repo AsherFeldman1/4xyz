@@ -3,14 +3,17 @@
 pragma solidity ^0.8.4;
 
 import "./FxVaults.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract FxUSDVaults is FxVaults {
+contract FxUSDVaults is Initializable, FxVaults {
 
-	using SafeMath for uint256;
+	using SafeMathUpgradeable for uint256;
 
-	constructor(address[] memory _collateralWhitelist, address _oracle, uint _debtTokenIndex)
-		FxVaults(_collateralWhitelist, _oracle, _debtTokenIndex) {}
+	function initialize(address[] memory _collateralWhitelist, bytes32[] memory _priceFeedKeys, address _oracle, uint _debtTokenIndex)
+		public override initializer {
+			FxVaults.initialize(_collateralWhitelist, _priceFeedKeys, _oracle, _debtTokenIndex);
+		}
 
 	function withdraw(uint _vaultID, uint _amount) external override onlyVaultOwner(_vaultID) vaultNotClosed(_vaultID) {
 		Vault storage vault = Vaults[_vaultID];

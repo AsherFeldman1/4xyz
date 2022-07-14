@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/chayf/4xyz/contracts/OrderBook/OrderBook.sol": {
-      "lastModificationDate": 1657742614654,
-      "contentHash": "edaaaa00b2b65342caa95e4a6c5989dc",
+      "lastModificationDate": 1657757920334,
+      "contentHash": "4f66a27d5b37f98e1f89361dab956daa",
       "sourceName": "contracts/OrderBook/OrderBook.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -19,7 +19,8 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -29,10 +30,11 @@
         }
       },
       "imports": [
-        "@openzeppelin/contracts/utils/math/SafeMath.sol",
-        "@openzeppelin/contracts/utils/math/SignedSafeMath.sol",
-        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol",
+        "@openzeppelin/contracts-upgradeable/utils/math/SignedSafeMathUpgradeable.sol",
+        "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol",
+        "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol",
+        "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
         "../RateOracle.sol",
         "../Vaults/FxVaults.sol",
         "hardhat/console.sol"
@@ -62,7 +64,8 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -97,7 +100,8 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -132,7 +136,8 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -167,7 +172,8 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -204,7 +210,8 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -239,7 +246,8 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -257,7 +265,7 @@
       ]
     },
     "/home/chayf/4xyz/node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": {
-      "lastModificationDate": 1656384376025,
+      "lastModificationDate": 1656648499351,
       "contentHash": "eadb8586af485da5f37f1e2f7ffd1f4c",
       "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
       "solcConfig": {
@@ -274,7 +282,8 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -313,7 +322,8 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -333,8 +343,8 @@
       ]
     },
     "/home/chayf/4xyz/contracts/Vaults/FxVaults.sol": {
-      "lastModificationDate": 1657653383160,
-      "contentHash": "7576823d4c111f356205bd4b83b44583",
+      "lastModificationDate": 1657758840714,
+      "contentHash": "3028eb2b0d1899ed4cf090aa8eac34ec",
       "sourceName": "contracts/Vaults/FxVaults.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -350,7 +360,8 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -361,7 +372,8 @@
       },
       "imports": [
         "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "@openzeppelin/contracts/utils/math/SafeMath.sol",
+        "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol",
+        "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
         "../RateOracle.sol",
         "./FxPerpStatic.sol",
         "./FxPerpDynamic.sol"
@@ -374,8 +386,8 @@
       ]
     },
     "/home/chayf/4xyz/contracts/Vaults/FxPerpStatic.sol": {
-      "lastModificationDate": 1656541204375,
-      "contentHash": "02daf0f9b219e5697de04e7c55a4a21a",
+      "lastModificationDate": 1657758879272,
+      "contentHash": "a37693fdde7589153d08a0e0f319513f",
       "sourceName": "contracts/Vaults/FxPerpStatic.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -391,7 +403,8 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -401,8 +414,9 @@
         }
       },
       "imports": [
-        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        "@openzeppelin/contracts/utils/math/SafeMath.sol",
+        "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol",
+        "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol",
+        "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
         "./FxVaults.sol",
         "./FxPerpDynamic.sol"
       ],
@@ -414,8 +428,8 @@
       ]
     },
     "/home/chayf/4xyz/contracts/Vaults/FxPerpDynamic.sol": {
-      "lastModificationDate": 1657665044862,
-      "contentHash": "632df29dab5d5f056e0d40ec3c4a7af7",
+      "lastModificationDate": 1657758234449,
+      "contentHash": "87521e79d79809305f450ca507cac21c",
       "sourceName": "contracts/Vaults/FxPerpDynamic.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -431,7 +445,8 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -441,8 +456,9 @@
         }
       },
       "imports": [
-        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        "@openzeppelin/contracts/utils/math/SafeMath.sol",
+        "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol",
+        "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol",
+        "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
         "./FxVaults.sol",
         "./FxPerpStatic.sol",
         "hardhat/console.sol"
@@ -455,8 +471,8 @@
       ]
     },
     "/home/chayf/4xyz/contracts/Vaults/FxUSDVaults.sol": {
-      "lastModificationDate": 1656542218437,
-      "contentHash": "528657c785f7b694c68b10ac8af7813f",
+      "lastModificationDate": 1657758834125,
+      "contentHash": "d3afc8475493464bc91bc604d9cd29a0",
       "sourceName": "contracts/Vaults/FxUSDVaults.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -472,7 +488,8 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -483,7 +500,8 @@
       },
       "imports": [
         "./FxVaults.sol",
-        "@openzeppelin/contracts/utils/math/SafeMath.sol"
+        "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol",
+        "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol"
       ],
       "versionPragmas": [
         "^0.8.4"
@@ -510,7 +528,8 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -547,7 +566,8 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -565,8 +585,8 @@
       ]
     },
     "/home/chayf/4xyz/contracts/RateOracle.sol": {
-      "lastModificationDate": 1657653352134,
-      "contentHash": "fab25589cb8e9bdffa9fb68acf707fdf",
+      "lastModificationDate": 1657753250428,
+      "contentHash": "f1c0474793a21c1f65a3709f7c004b13",
       "sourceName": "contracts/RateOracle.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -582,7 +602,50 @@
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol",
+        "./utils/IPriceFeed.sol",
+        "./utils/BlockContext.sol",
+        "./utils/PerpFiOwnableUpgrade.sol",
+        "./utils/Decimal.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.4"
+      ],
+      "artifacts": [
+        "RateOracle"
+      ]
+    },
+    "/home/chayf/4xyz/contracts/utils/IPriceFeed.sol": {
+      "lastModificationDate": 1657747389753,
+      "contentHash": "5a191a3a99848c021fe0456ad245343f",
+      "sourceName": "contracts/utils/IPriceFeed.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
               ],
               "": [
                 "ast"
@@ -596,7 +659,496 @@
         "^0.8.4"
       ],
       "artifacts": [
-        "RateOracle"
+        "IPriceFeed"
+      ]
+    },
+    "/home/chayf/4xyz/contracts/utils/BlockContext.sol": {
+      "lastModificationDate": 1657747401797,
+      "contentHash": "69533f2478eb74d176edcc11e1a89de1",
+      "sourceName": "contracts/utils/BlockContext.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.4"
+      ],
+      "artifacts": [
+        "BlockContext"
+      ]
+    },
+    "/home/chayf/4xyz/contracts/utils/PerpFiOwnableUpgrade.sol": {
+      "lastModificationDate": 1657747386629,
+      "contentHash": "a157b61d0e1ea52131e214e5de5f1c81",
+      "sourceName": "contracts/utils/PerpFiOwnableUpgrade.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.4"
+      ],
+      "artifacts": [
+        "PerpFiOwnableUpgrade"
+      ]
+    },
+    "/home/chayf/4xyz/contracts/utils/Decimal.sol": {
+      "lastModificationDate": 1657747398349,
+      "contentHash": "f33ea57d71028a83f546ea4bf282e58a",
+      "sourceName": "contracts/utils/Decimal.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/utils/math/SafeMath.sol",
+        "./DecimalMath.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.4"
+      ],
+      "artifacts": [
+        "Decimal"
+      ]
+    },
+    "/home/chayf/4xyz/node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol": {
+      "lastModificationDate": 1653790305752,
+      "contentHash": "6200b84950eb05b4a92a39fd1d6e0f9b",
+      "sourceName": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../proxy/utils/Initializable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "ContextUpgradeable"
+      ]
+    },
+    "/home/chayf/4xyz/node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol": {
+      "lastModificationDate": 1653790305796,
+      "contentHash": "be27cb63ce8e469db3306a210450385f",
+      "sourceName": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../../utils/AddressUpgradeable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.2"
+      ],
+      "artifacts": [
+        "Initializable"
+      ]
+    },
+    "/home/chayf/4xyz/node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol": {
+      "lastModificationDate": 1653790305752,
+      "contentHash": "b70d2e0552ab1f44f7e44b5f8379c358",
+      "sourceName": "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.1"
+      ],
+      "artifacts": [
+        "AddressUpgradeable"
+      ]
+    },
+    "/home/chayf/4xyz/contracts/utils/DecimalMath.sol": {
+      "lastModificationDate": 1657747394197,
+      "contentHash": "31a2abc4645c8916fcb46cf281cb1182",
+      "sourceName": "contracts/utils/DecimalMath.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/utils/math/SafeMath.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.4"
+      ],
+      "artifacts": [
+        "DecimalMath"
+      ]
+    },
+    "/home/chayf/4xyz/node_modules/@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol": {
+      "lastModificationDate": 1653790305808,
+      "contentHash": "d4935b19cfe21e88d08fab5f379dd020",
+      "sourceName": "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "SafeMathUpgradeable"
+      ]
+    },
+    "/home/chayf/4xyz/node_modules/@openzeppelin/contracts-upgradeable/utils/math/SignedSafeMathUpgradeable.sol": {
+      "lastModificationDate": 1653790305808,
+      "contentHash": "da913dbd87df67d683572138d4d6e42c",
+      "sourceName": "@openzeppelin/contracts-upgradeable/utils/math/SignedSafeMathUpgradeable.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "SignedSafeMathUpgradeable"
+      ]
+    },
+    "/home/chayf/4xyz/node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol": {
+      "lastModificationDate": 1653790305792,
+      "contentHash": "a9ed3c7bc7d9ebb5e34f20829274f088",
+      "sourceName": "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "IERC20Upgradeable"
+      ]
+    },
+    "/home/chayf/4xyz/node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol": {
+      "lastModificationDate": 1653790305804,
+      "contentHash": "11b77de3cb69dfc6b342ec87bd09cbdd",
+      "sourceName": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../utils/ContextUpgradeable.sol",
+        "../proxy/utils/Initializable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "OwnableUpgradeable"
+      ]
+    },
+    "/home/chayf/4xyz/node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol": {
+      "lastModificationDate": 1657758489283,
+      "contentHash": "80fd8eb29c9cace4e9c0b6a719724344",
+      "sourceName": "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IERC20Upgradeable.sol",
+        "./extensions/IERC20MetadataUpgradeable.sol",
+        "../../utils/ContextUpgradeable.sol",
+        "../../proxy/utils/Initializable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "ERC20Upgradeable"
+      ]
+    },
+    "/home/chayf/4xyz/node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol": {
+      "lastModificationDate": 1653790305792,
+      "contentHash": "9efcd5467a7f0bf533910ee8a267adb2",
+      "sourceName": "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../IERC20Upgradeable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "IERC20MetadataUpgradeable"
       ]
     }
   }
