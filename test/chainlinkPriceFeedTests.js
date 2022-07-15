@@ -6,7 +6,7 @@ const BONE = BN.from(10).pow(BN.from(18));
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 describe("Funding rates", function () {
-
+/*
   it("0 should equal 0", async function () {
     expect(0).to.equal(0);
   });
@@ -21,4 +21,5 @@ describe("Funding rates", function () {
   it("Should return a value for twap", async function () {
     console.log(await oracleInstance.getTwapPrice(key, BN.from(3600)));
   });
+  */
 });

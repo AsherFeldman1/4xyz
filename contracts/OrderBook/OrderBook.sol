@@ -7,11 +7,12 @@ import "@openzeppelin/contracts-upgradeable/utils/math/SignedSafeMathUpgradeable
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "../utils/interfaces/IOrderBook.sol";
 import "../RateOracle.sol";
 import "../Vaults/FxVaults.sol";
 import "hardhat/console.sol";
 
-contract OrderBook is Initializable, OwnableUpgradeable {
+contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 	
 	using SafeMathUpgradeable for uint256;
 	using SignedSafeMathUpgradeable for int256;
@@ -77,9 +78,9 @@ contract OrderBook is Initializable, OwnableUpgradeable {
 	address _USD, address _Oracle) public initializer {
 		FxPerpetuals = _FxPerpetuals;
 		Vaults = _Vaults;
+		priceFeedKeys = _priceFeedKeys;
 		USD = IERC20(_USD);
 		Oracle = RateOracle(_Oracle);
-		priceFeedKeys = _priceFeedKeys;
 		BONE = 1e18;
 		fundingInterval = 3600;
 		fundingDivisor = 24;
@@ -94,8 +95,7 @@ contract OrderBook is Initializable, OwnableUpgradeable {
 		_;
 	}
 
-	function limitBuy(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public {
-		require(USD.allowance(msg.sender, address(this)) >= _volume.mul(_price).div(BONE));
+	function limitBuy(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public override {
 		uint newVolume;
 		if (openSellOrders[_tokenIndex] > 0) {
 			newVolume = marketBuy(_tokenIndex, _price, _volume);
@@ -164,9 +164,8 @@ contract OrderBook is Initializable, OwnableUpgradeable {
 		}
 	}
 
-	function limitSell(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public {
+	function limitSell(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public override {
 		IERC20 Fiat = IERC20(FxPerpetuals[_tokenIndex]);
-		require(Fiat.allowance(msg.sender, address(this)) >= _volume);
 		uint newVolume;
 		if (openBuyOrders[_tokenIndex] > 0) {
 			newVolume = marketSell(_tokenIndex, _price, _volume);
@@ -235,7 +234,7 @@ contract OrderBook is Initializable, OwnableUpgradeable {
 		}
 	}
 
-	function marketSell(uint _tokenIndex, uint _minPrice, uint _volume) public returns(uint) {
+	function marketSell(uint _tokenIndex, uint _minPrice, uint _volume) public override returns(uint) {
 		IERC20 Fiat = IERC20(FxPerpetuals[_tokenIndex]);
 		require(Fiat.allowance(msg.sender, address(this)) >= _volume);
 		require(openBuyOrders[_tokenIndex] > 0);
@@ -265,7 +264,7 @@ contract OrderBook is Initializable, OwnableUpgradeable {
 		return _volume;
 	}
 
-	function marketBuy(uint _tokenIndex, uint _maxPrice, uint _volume) public returns(uint) {
+	function marketBuy(uint _tokenIndex, uint _maxPrice, uint _volume) public override returns(uint) {
 		IERC20 Fiat = IERC20(FxPerpetuals[_tokenIndex]);
 		require(USD.allowance(msg.sender, address(this)) >= _maxPrice.mul(_volume).div(BONE));
 		require(openSellOrders[_tokenIndex] > 0);
@@ -295,14 +294,14 @@ contract OrderBook is Initializable, OwnableUpgradeable {
 		return _volume;
 	}
 
-	function deleteBuy(uint _ID) public {
+	function deleteBuy(uint _ID) public override {
 		uint amount = buys[_ID].Volume.mul(buys[_ID].Price).div(BONE);
 		USD.transfer(msg.sender, amount);
 		require(msg.sender == buys[_ID].Maker);
 		_deleteBuy(_ID);
 	}
 
-	function deleteSell(uint _ID) public {
+	function deleteSell(uint _ID) public override {
 		IERC20 Fiat = IERC20(FxPerpetuals[sells[_ID].TokenIndex]);
 		Fiat.transfer(msg.sender, sells[_ID].Volume);
 		require(msg.sender == sells[_ID].Maker);
@@ -355,7 +354,7 @@ contract OrderBook is Initializable, OwnableUpgradeable {
 		openSellOrders[_tokenIndex]--;
 	}
 
-	function getBuy(uint _ID) external view returns(address maker, uint index, uint id, uint price, uint volume, uint next, uint prev) {
+	function getBuy(uint _ID) external override view returns(address maker, uint index, uint id, uint price, uint volume, uint next, uint prev) {
 		BuyOrder memory order = buys[_ID];
 		return (
 			order.Maker,
@@ -368,7 +367,7 @@ contract OrderBook is Initializable, OwnableUpgradeable {
 		);
 	}
 
-	function getSell(uint _ID) external view returns(address maker, uint index, uint id, uint price, uint volume, uint next, uint prev) {
+	function getSell(uint _ID) external override view returns(address maker, uint index, uint id, uint price, uint volume, uint next, uint prev) {
 		SellOrder memory order = sells[_ID];
 		return (
 			order.Maker,
@@ -381,19 +380,19 @@ contract OrderBook is Initializable, OwnableUpgradeable {
 		);
 	}
 
-	function getBuyHead(uint _tokenIndex) external view returns(uint) {
+	function getBuyHead(uint _tokenIndex) external override view returns(uint) {
 		return buyHeads[_tokenIndex];
 	}
 
-	function getSellHead(uint _tokenIndex) external view returns(uint) {
+	function getSellHead(uint _tokenIndex) external override view returns(uint) {
 		return sellHeads[_tokenIndex];
 	}
 
-	function getOpenBuyOrders(uint _tokenIndex) external view returns(uint) {
+	function getOpenBuyOrders(uint _tokenIndex) external override view returns(uint) {
 		return openBuyOrders[_tokenIndex];
 	}
 
-	function getOpenSellOrders(uint _tokenIndex) external view returns(uint) {
+	function getOpenSellOrders(uint _tokenIndex) external override view returns(uint) {
 		return openSellOrders[_tokenIndex];
 	}
 

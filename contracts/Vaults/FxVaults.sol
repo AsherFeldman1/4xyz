@@ -52,7 +52,7 @@ contract FxVaults is Initializable {
 	uint[50] private __gap;
 
 	function initialize(address[] memory _collateralWhitelist, bytes32[] memory _priceFeedKeys,
-	 address _oracle, uint _debtTokenIndex) public virtual onlyInitializing {
+	 address _oracle, uint _debtTokenIndex) public virtual initializer {
 		oracle = RateOracle(_oracle);
 		debtTokenIndex = _debtTokenIndex;
 		collateralWhitelist = _collateralWhitelist;
@@ -173,9 +173,11 @@ contract FxVaults is Initializable {
 		_price = price == 0 ? 0 : price.mul(_amount).div(BONE);
 	}
 
-	function addCollateralOption(address _collateral) external {
+	function addCollateralOption(address _collateral, bytes32 _priceFeedKey) external {
 		require(msg.sender == owner);
+		require(collateralWhitelist.length == priceFeedKeys.length);
 		collateralWhitelist.push(_collateral);
+		priceFeedKeys.push(_priceFeedKey);
 	}
 
 	function updateDynamicMultiplier(uint _fundingRate) external {

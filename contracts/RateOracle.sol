@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 pragma experimental ABIEncoderV2;
 
 import { AggregatorV3Interface } from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-import { IPriceFeed } from "./utils/IPriceFeed.sol";
+import { IPriceFeed } from "./utils/interfaces/IPriceFeed.sol";
 import { BlockContext } from "./utils/BlockContext.sol";
 import { PerpFiOwnableUpgrade } from "./utils/PerpFiOwnableUpgrade.sol";
 import { Decimal, SafeMath } from "./utils/Decimal.sol";

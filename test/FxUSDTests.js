@@ -14,15 +14,15 @@ describe("USD Vaults", function () {
     const Oracle = await ethers.getContractFactory("RateOracle");
     oracleInstance = await Oracle.deploy();
     const Dummy = await ethers.getContractFactory("DummyToken");
-    dummyInstance = await Dummy.deploy();
+    dummyInstance = await upgrades.deployProxy(Dummy, []);
     const Vaults = await ethers.getContractFactory("FxUSDVaults");
-    vaultsInstance = await Vaults.deploy([dummyInstance.address], oracleInstance.address, 1);
+    vaultsInstance = await upgrades.deployProxy(Vaults, [[dummyInstance.address], oracleInstance.address, 1]);
     const Static = await ethers.getContractFactory("FxPerpStatic");
-    staticInstance = await Static.deploy("Static", "STA", vaultsInstance.address);
+    staticInstance = await upgrades.deployProxy(Static, ["Static", "STA", vaultsInstance.address]);
     const Dynamic = await ethers.getContractFactory("FxPerpDynamic");
-    dynamicInstance = await Dynamic.deploy("Dynamic", "DYN", vaultsInstance.address, staticInstance.address)
+    dynamicInstance = await upgrades.deployProxy(Dynamic, ["Dynamic", "DYN", vaultsInstance.address, staticInstance.address])
     const OrderBook = await ethers.getContractFactory("OrderBook");
-    orderBookInstance = await OrderBook.deploy([dynamicInstance.address], [vaultsInstance.address], [0], dummyInstance.address, oracleInstance.address);
+    orderBookInstance = await upgrades.deployProxy(OrderBook, [[dynamicInstance.address], [vaultsInstance.address], dummyInstance.address, oracleInstance.address]);
     await staticInstance.setDynamic(dynamicInstance.address);
     await vaultsInstance.setState(staticInstance.address, dynamicInstance.address, orderBookInstance.address);
     accounts = await ethers.getSigners();

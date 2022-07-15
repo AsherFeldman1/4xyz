@@ -13,7 +13,7 @@ describe("Funding rates", function () {
 
   it("Before each", async function () {
     const Oracle = await ethers.getContractFactory("RateOracle");
-    oracleInstance = await upgrades.deployProxy(Oracle, []);
+    oracleInstance = await Oracle.deploy();
     const Dummy = await ethers.getContractFactory("DummyToken");
     dummyInstance = await upgrades.deployProxy(Dummy, []);
     const Vaults = await ethers.getContractFactory("FxVaults");
@@ -23,7 +23,7 @@ describe("Funding rates", function () {
     const Dynamic = await ethers.getContractFactory("FxPerpDynamic");
     dynamicInstance = await upgrades.deployProxy(Dynamic, ["Dynamic", "DYN", vaultsInstance.address, staticInstance.address])
     const OrderBook = await ethers.getContractFactory("OrderBook");
-    orderBookInstance = await upgrades.deployProxy(OrderBook, [[dynamicInstance.address], [vaultsInstance.address], [0], dummyInstance.address, oracleInstance.address]);
+    orderBookInstance = await upgrades.deployProxy(OrderBook, [[dynamicInstance.address], [vaultsInstance.address], dummyInstance.address, oracleInstance.address]);
     await staticInstance.setDynamic(dynamicInstance.address);
     await vaultsInstance.setState(staticInstance.address, dynamicInstance.address, orderBookInstance.address);
     accounts = await ethers.getSigners();
