@@ -33,7 +33,7 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 	mapping(uint => uint) public totalPriceDataPoints;
 	mapping(uint => uint) public lastCumulativePriceUpdate;
 
-	uint internal constant CUMULATIVE_UPDATE_THRESHOLD = 30;
+	uint internal CUMULATIVE_UPDATE_THRESHOLD;
 	
 	bytes32[] internal priceFeedKeys;
 
@@ -41,6 +41,8 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 	uint public sellID;
 
 	uint internal BONE;
+
+	uint internal MINIMUM_ORDER_SIZE;
 
 	uint internal lastFundingRateCalculation;
 
@@ -74,17 +76,18 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 
 	uint[50] private __gap;
 
-	function initialize(address[] memory _FxPerpetuals, address[] memory _Vaults, bytes32[] memory _priceFeedKeys,
+	function initialize(address[] memory _FxPerpetuals, address[] memory _Vaults,
 	address _USD, address _Oracle) public initializer {
 		FxPerpetuals = _FxPerpetuals;
 		Vaults = _Vaults;
-		priceFeedKeys = _priceFeedKeys;
 		USD = IERC20(_USD);
 		Oracle = RateOracle(_Oracle);
 		BONE = 1e18;
 		fundingInterval = 3600;
 		fundingDivisor = 24;
 		lastFundingRateCalculation = block.timestamp;
+		CUMULATIVE_UPDATE_THRESHOLD = 30;
+		MINIMUM_ORDER_SIZE = BONE.mul(50);
 		OwnableUpgradeable.__Ownable_init();
 	}
 
@@ -95,12 +98,13 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 		_;
 	}
 
-	function limitBuy(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public override {
+	function limitBuy(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public override returns(uint newID) {
+		require(_volume.mul(_price).div(BONE) >= MINIMUM_ORDER_SIZE);
 		uint newVolume;
-		if (openSellOrders[_tokenIndex] > 0) {
+		if (sells[sellHeads[_tokenIndex]].Price <= _price && openSellOrders[_tokenIndex] > 0) {
 			newVolume = marketBuy(_tokenIndex, _price, _volume);
 			if (newVolume == 0) {
-				return;
+				return 0;
 			}
 			USD.transferFrom(msg.sender, address(this), newVolume.mul(_price).div(BONE));
 		} else {
@@ -116,61 +120,19 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 			0,
 			0
 		);
-		buys[buyID] = order;
-		if (openBuyOrders[_tokenIndex] == 0) {
-			buyHeads[_tokenIndex] = buyID;
-			openBuyOrders[_tokenIndex]++;
-			return;
-		}
-		BuyOrder storage head = buys[buyHeads[_tokenIndex]];
-		if (_price > head.Price) {
-			buyHeads[_tokenIndex] = order.ID;
-			order.Next = head.ID;
-			head.Prev = order.ID;
-			openBuyOrders[_tokenIndex]++;
-			buys[buyID] = order;
-			return;
-		} else {
-			uint curr = head.Next;
-			if (curr == 0) {
-				head.Next = order.ID;
-				order.Prev = head.ID;
-				openBuyOrders[_tokenIndex]++;
-				buys[buyID] = order;
-				return;
-			}
-			if (buys[_targetInsertion].TokenIndex == _tokenIndex && buys[_targetInsertion].Price > _price && buys[_targetInsertion].Volume != 0) {
-				curr = _targetInsertion;
-			}
-			while (buys[curr].Price > _price) {
-				if (buys[curr].Next == 0) {
-					break;
-				}
-				curr = buys[curr].Next;
-			}
-			if (buys[curr].Next == 0 && buys[curr].Price > _price) {
-				buys[curr].Next = order.ID;
-				order.Prev = curr;
-				openBuyOrders[_tokenIndex]++;
-				buys[buyID] = order;
-				return;
-			}
-			buys[buys[curr].Prev].Next = order.ID;
-			order.Prev = buys[curr].Prev;
-			order.Next = curr;
-			buys[curr].Prev = order.ID;
-			openBuyOrders[_tokenIndex]++;
-			buys[buyID] = order;
-		}
+		_insertBuy(order, _targetInsertion);
+		openBuyOrders[_tokenIndex]++;
+		return buyID;
 	}
 
-	function limitSell(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public override {
+	function limitSell(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public override returns(uint newIDs) {
+		require(_volume.mul(_price).div(BONE) >= MINIMUM_ORDER_SIZE);
 		IERC20 Fiat = IERC20(FxPerpetuals[_tokenIndex]);
 		uint newVolume;
-		if (openBuyOrders[_tokenIndex] > 0) {
+		if (buys[buyHeads[_tokenIndex]].Price >= _price) {
 			newVolume = marketSell(_tokenIndex, _price, _volume);
 			if (newVolume == 0) {
-				return;
+				return 0;
 			}
 			Fiat.transferFrom(msg.sender, address(this), newVolume);
 		} else {
@@ -186,52 +148,9 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 			0,
 			0
 		);
-		sells[sellID] = order;
-		if (openSellOrders[_tokenIndex] == 0) {
-			sellHeads[_tokenIndex] = sellID;
-			openSellOrders[_tokenIndex]++;
-			return;
-		}
-		SellOrder storage head = sells[sellHeads[_tokenIndex]];
-		if (_price < head.Price) {
-			sellHeads[_tokenIndex] = order.ID;
-			order.Next = head.ID;
-			head.Prev = order.ID;
-			openSellOrders[_tokenIndex]++;
-			sells[sellID] = order;
-			return;
-		} else {
-			uint curr = head.Next;
-			if (curr == 0) {
-				head.Next = order.ID;
-				order.Prev = head.ID;
-				openSellOrders[_tokenIndex]++;
-				sells[sellID] = order;
-				return;
-			}
-			if (sells[_targetInsertion].TokenIndex == _tokenIndex && sells[_targetInsertion].Price < _price && sells[_targetInsertion].Volume != 0) {
-				curr = _targetInsertion;
-			}
-			while (sells[curr].Price < _price) {
-				if (sells[curr].Next == 0) {
-					break;
-				}
-				curr = sells[curr].Next;
-			}
-			if (sells[curr].Next == 0 && sells[curr].Price < _price) {
-				sells[curr].Next = order.ID;
-				order.Prev = curr;
-				openSellOrders[_tokenIndex]++;
-				sells[sellID] = order;
-				return;
-			}
-			sells[sells[curr].Prev].Next = order.ID;
-			order.Prev = sells[curr].Prev;
-			order.Next = curr;
-			sells[curr].Prev = order.ID;
-			openSellOrders[_tokenIndex]++;
-			sells[sellID] = order;
-		}
+		_insertSell(order, _targetInsertion);
+		openSellOrders[_tokenIndex]++;
+		return sellID;
 	}
 
 	function marketSell(uint _tokenIndex, uint _minPrice, uint _volume) public override returns(uint) {
@@ -294,6 +213,61 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 		return _volume;
 	}
 
+	function modifyBuy(uint _ID, uint _newPrice, uint _newVolume) external override {
+		BuyOrder memory order = buys[_ID];
+		require(_newPrice != order.Price || _newVolume != order.Volume);
+		require(_newPrice != 0 && _newVolume != 0);
+		require(msg.sender == order.Maker);
+		uint index = order.TokenIndex;
+		uint oldTotal = order.Price.mul(order.Volume).div(BONE);
+		uint newTotal = _newPrice.mul(_newVolume).div(BONE);
+		uint dif = oldTotal > newTotal ? oldTotal.sub(newTotal) : newTotal.sub(newTotal);
+		if (oldTotal > newTotal) {
+			USD.transfer(msg.sender, dif);
+		} else {
+			USD.transferFrom(msg.sender, address(this), dif);
+		}
+		_deleteBuy(_ID);
+		BuyOrder memory Order = BuyOrder(
+			msg.sender,
+			index,
+			_ID,
+			_newPrice,
+			_newVolume,
+			0,
+			0
+		);
+		_insertBuy(Order, 0);
+	}
+
+	function modifySell(uint _ID, uint _newPrice, uint _newVolume) external override {
+		BuyOrder memory order = buys[_ID];
+		require(_newPrice != order.Price || _newVolume != order.Volume);
+		require(_newPrice != 0 && _newVolume != 0);
+		require(msg.sender == order.Maker);
+		IERC20 Fiat = IERC20(FxPerpetuals[order.TokenIndex]);
+		uint index = order.TokenIndex;
+		if (_newVolume != order.Volume) {
+			uint dif = order.Volume > _newVolume ? order.Volume.sub(_newVolume) : _newVolume.sub(order.Volume);
+			if (order.Volume > _newVolume) {
+				Fiat.transfer(msg.sender, dif);
+			} else {
+				Fiat.transferFrom(msg.sender, address(this), dif);
+			}
+		}
+		_deleteSell(_ID);
+		SellOrder memory Order = SellOrder(
+			msg.sender,
+			index,
+			_ID,
+			_newPrice,
+			_newVolume,
+			0,
+			0
+		);
+		_insertSell(Order, 0);
+	}
+
 	function deleteBuy(uint _ID) public override {
 		uint amount = buys[_ID].Volume.mul(buys[_ID].Price).div(BONE);
 		USD.transfer(msg.sender, amount);
@@ -352,6 +326,105 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 		sells[sells[head].Next].Prev = 0;
 		delete sells[head];
 		openSellOrders[_tokenIndex]--;
+	}
+
+	function _insertBuy(BuyOrder memory order, uint _targetInsertion) internal {
+		uint _ID = order.ID;
+		uint _price = order.Price;
+		uint _tokenIndex = order.TokenIndex;
+		buys[_ID] = order;
+		if (openBuyOrders[_tokenIndex] == 0) {
+			buyHeads[_tokenIndex] = _ID;
+			return;
+		}
+		BuyOrder storage head = buys[buyHeads[_tokenIndex]];
+		if (_price > head.Price) {
+			buyHeads[_tokenIndex] = order.ID;
+			order.Next = head.ID;
+			head.Prev = order.ID;
+			buys[_ID] = order;
+			return;
+		} else {
+			uint curr = head.Next;
+			if (curr == 0) {
+				head.Next = order.ID;
+				order.Prev = head.ID;
+				buys[_ID] = order;
+				return;
+			}
+			if (buys[_targetInsertion].TokenIndex == _tokenIndex && buys[_targetInsertion].Price > _price && buys[_targetInsertion].Volume != 0) {
+				curr = _targetInsertion;
+			}
+			while (buys[curr].Price > _price) {
+				if (buys[curr].Next == 0) {
+					break;
+				}
+				curr = buys[curr].Next;
+			}
+			if (buys[curr].Next == 0 && buys[curr].Price > _price) {
+				buys[curr].Next = order.ID;
+				order.Prev = curr;
+				buys[_ID] = order;
+				return;
+			}
+			buys[buys[curr].Prev].Next = order.ID;
+			order.Prev = buys[curr].Prev;
+			order.Next = curr;
+			buys[curr].Prev = order.ID;
+			buys[_ID] = order;
+		}
+	}
+
+	function _insertSell(SellOrder memory order, uint _targetInsertion) internal {
+		uint _ID = order.ID;
+		uint _price = order.Price;
+		uint _tokenIndex = order.TokenIndex;
+		sells[_ID] = order;
+		if (openSellOrders[_tokenIndex] == 0) {
+			sellHeads[_tokenIndex] = _ID;
+			openSellOrders[_tokenIndex]++;
+			return;
+		}
+		SellOrder storage head = sells[sellHeads[_tokenIndex]];
+		if (_price < head.Price) {
+			sellHeads[_tokenIndex] = order.ID;
+			order.Next = head.ID;
+			head.Prev = order.ID;
+			openSellOrders[_tokenIndex]++;
+			sells[_ID] = order;
+			return;
+		} else {
+			uint curr = head.Next;
+			if (curr == 0) {
+				head.Next = order.ID;
+				order.Prev = head.ID;
+				openSellOrders[_tokenIndex]++;
+				sells[_ID] = order;
+				return;
+			}
+			if (sells[_targetInsertion].TokenIndex == _tokenIndex && sells[_targetInsertion].Price < _price && sells[_targetInsertion].Volume != 0) {
+				curr = _targetInsertion;
+			}
+			while (sells[curr].Price < _price) {
+				if (sells[curr].Next == 0) {
+					break;
+				}
+				curr = sells[curr].Next;
+			}
+			if (sells[curr].Next == 0 && sells[curr].Price < _price) {
+				sells[curr].Next = order.ID;
+				order.Prev = curr;
+				openSellOrders[_tokenIndex]++;
+				sells[_ID] = order;
+				return;
+			}
+			sells[sells[curr].Prev].Next = order.ID;
+			order.Prev = sells[curr].Prev;
+			order.Next = curr;
+			sells[curr].Prev = order.ID;
+			openSellOrders[_tokenIndex]++;
+			sells[_ID] = order;
+		}
 	}
 
 	function getBuy(uint _ID) external override view returns(address maker, uint index, uint id, uint price, uint volume, uint next, uint prev) {

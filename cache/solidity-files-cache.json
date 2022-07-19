@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/chayf/4xyz/contracts/OrderBook/OrderBook.sol": {
-      "lastModificationDate": 1657842810764,
-      "contentHash": "1c63b01f9eb5fdb51d8cb1303301a013",
+      "lastModificationDate": 1658268960079,
+      "contentHash": "db49ca7879b51bfe040557989e8f5be0",
       "sourceName": "contracts/OrderBook/OrderBook.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -35,7 +35,7 @@
         "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol",
         "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol",
         "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
-        "../utils/IOrderBook.sol",
+        "../utils/interfaces/IOrderBook.sol",
         "../RateOracle.sol",
         "../Vaults/FxVaults.sol",
         "hardhat/console.sol"
@@ -344,8 +344,8 @@
       ]
     },
     "/home/chayf/4xyz/contracts/Vaults/FxVaults.sol": {
-      "lastModificationDate": 1657763935221,
-      "contentHash": "cbe5c696aba49625999fa396e2bd1ee2",
+      "lastModificationDate": 1658268605925,
+      "contentHash": "a502dae27206fa08ae12d72325491151",
       "sourceName": "contracts/Vaults/FxVaults.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -472,8 +472,8 @@
       ]
     },
     "/home/chayf/4xyz/contracts/Vaults/FxUSDVaults.sol": {
-      "lastModificationDate": 1657763993760,
-      "contentHash": "d3afc8475493464bc91bc604d9cd29a0",
+      "lastModificationDate": 1658268586311,
+      "contentHash": "39e2446a8498055ba00a16ed26199bdb",
       "sourceName": "contracts/Vaults/FxUSDVaults.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -587,8 +587,8 @@
       ]
     },
     "/home/chayf/4xyz/contracts/RateOracle.sol": {
-      "lastModificationDate": 1657761458721,
-      "contentHash": "f1c0474793a21c1f65a3709f7c004b13",
+      "lastModificationDate": 1658268406209,
+      "contentHash": "45ebfb52069f2974f05bdb25a2f22d55",
       "sourceName": "contracts/RateOracle.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -616,7 +616,7 @@
       },
       "imports": [
         "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol",
-        "./utils/IPriceFeed.sol",
+        "./utils/interfaces/IPriceFeed.sol",
         "./utils/BlockContext.sol",
         "./utils/PerpFiOwnableUpgrade.sol",
         "./utils/Decimal.sol"
@@ -626,42 +626,6 @@
       ],
       "artifacts": [
         "RateOracle"
-      ]
-    },
-    "/home/chayf/4xyz/contracts/utils/IPriceFeed.sol": {
-      "lastModificationDate": 1657747389753,
-      "contentHash": "5a191a3a99848c021fe0456ad245343f",
-      "sourceName": "contracts/utils/IPriceFeed.sol",
-      "solcConfig": {
-        "version": "0.8.4",
-        "settings": {
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.4"
-      ],
-      "artifacts": [
-        "IPriceFeed"
       ]
     },
     "/home/chayf/4xyz/contracts/utils/BlockContext.sol": {
@@ -1153,10 +1117,46 @@
         "IERC20MetadataUpgradeable"
       ]
     },
-    "/home/chayf/4xyz/contracts/utils/IOrderBook.sol": {
-      "lastModificationDate": 1657842850182,
-      "contentHash": "1362bb934809b25c37d0995250484bad",
-      "sourceName": "contracts/utils/IOrderBook.sol",
+    "/home/chayf/4xyz/contracts/utils/interfaces/IPriceFeed.sol": {
+      "lastModificationDate": 1657842960069,
+      "contentHash": "5a191a3a99848c021fe0456ad245343f",
+      "sourceName": "contracts/utils/interfaces/IPriceFeed.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.4"
+      ],
+      "artifacts": [
+        "IPriceFeed"
+      ]
+    },
+    "/home/chayf/4xyz/contracts/utils/interfaces/IOrderBook.sol": {
+      "lastModificationDate": 1658267198072,
+      "contentHash": "00e86705cacc408d78b69de7e0ee4bf1",
+      "sourceName": "contracts/utils/interfaces/IOrderBook.sol",
       "solcConfig": {
         "version": "0.8.4",
         "settings": {
