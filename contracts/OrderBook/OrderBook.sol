@@ -97,7 +97,7 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 
 	function limitBuy(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public override {
 		uint newVolume;
-		if (openSellOrders[_tokenIndex] > 0) {
+		if (openSellOrders[_tokenIndex] > 0 && sells[sellHeads[_tokenIndex]].Price <= _price) {
 			newVolume = marketBuy(_tokenIndex, _price, _volume);
 			if (newVolume == 0) {
 				return;
@@ -167,7 +167,7 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 	function limitSell(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public override {
 		IERC20 Fiat = IERC20(FxPerpetuals[_tokenIndex]);
 		uint newVolume;
-		if (openBuyOrders[_tokenIndex] > 0) {
+		if (buys[buyHeads[_tokenIndex]].Price >= _price) {
 			newVolume = marketSell(_tokenIndex, _price, _volume);
 			if (newVolume == 0) {
 				return;
@@ -265,9 +265,9 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 	}
 
 	function marketBuy(uint _tokenIndex, uint _maxPrice, uint _volume) public override returns(uint) {
-		IERC20 Fiat = IERC20(FxPerpetuals[_tokenIndex]);
 		require(USD.allowance(msg.sender, address(this)) >= _maxPrice.mul(_volume).div(BONE));
 		require(openSellOrders[_tokenIndex] > 0);
+		IERC20 Fiat = IERC20(FxPerpetuals[_tokenIndex]);
 		uint curr = sellHeads[_tokenIndex];
 		while (_volume > 0 && sells[curr].Price <= _maxPrice && curr != 0) {
 			SellOrder storage currOrder = sells[curr];
@@ -292,6 +292,38 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 			}
 		}
 		return _volume;
+	}
+
+	function modifyBuy(uint _ID, uint _newVolume) external override {
+		BuyOrder memory order = buys[_ID];
+		require(order.Maker == msg.sender);
+		require(_newVolume != order.Volume && _newVolume > 0);
+		uint oldValue = order.Volume.mul(order.Price).div(BONE);
+		uint newValue = _newVolume.mul(order.Price).div(BONE);
+		uint dif = oldValue > newValue ? oldValue - newValue : newValue - oldValue;
+		order.Volume = _newVolume;
+		buys[_ID] = order;
+		if (oldValue > newValue) {
+			USD.transfer(msg.sender, dif);
+		} else {
+			USD.transferFrom(msg.sender, address(this), dif);
+		}
+	}
+
+	function modifySell(uint _ID, uint _newVolume) external override {
+		SellOrder memory order = sells[_ID];
+		require(order.Maker == msg.sender);
+		require(_newVolume != order.Volume && _newVolume > 0);
+		IERC20 Fiat = IERC20(FxPerpetuals[_ID]);
+		uint dif = order.Volume > _newVolume ? order.Volume - _newVolume : _newVolume - order.Volume;
+		uint oldVolume = order.Volume;
+		order.Volume = _newVolume;
+		sells[_ID] = order;
+		if (oldVolume > _newVolume) {
+			Fiat.transfer(msg.sender, dif);
+		} else {
+			Fiat.transferFrom(msg.sender, address(this), dif);
+		}
 	}
 
 	function deleteBuy(uint _ID) public override {
