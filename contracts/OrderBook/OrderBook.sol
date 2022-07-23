@@ -34,6 +34,7 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 	mapping(uint => uint) public lastCumulativePriceUpdate;
 
 	uint internal constant CUMULATIVE_UPDATE_THRESHOLD = 30;
+	uint internal constant MINIMUM_ORDER_SIZE = 50e18;
 	
 	bytes32[] internal priceFeedKeys;
 
@@ -95,12 +96,13 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 		_;
 	}
 
-	function limitBuy(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public override {
+	function limitBuy(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public override returns(uint newID) {
+		require(_price.mul(_volume).div(BONE) >= MINIMUM_ORDER_SIZE);
 		uint newVolume;
 		if (openSellOrders[_tokenIndex] > 0 && sells[sellHeads[_tokenIndex]].Price <= _price) {
 			newVolume = marketBuy(_tokenIndex, _price, _volume);
 			if (newVolume == 0) {
-				return;
+				return 0;
 			}
 			USD.transferFrom(msg.sender, address(this), newVolume.mul(_price).div(BONE));
 		} else {
@@ -120,7 +122,7 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 		if (openBuyOrders[_tokenIndex] == 0) {
 			buyHeads[_tokenIndex] = buyID;
 			openBuyOrders[_tokenIndex]++;
-			return;
+			return buyID;
 		}
 		BuyOrder storage head = buys[buyHeads[_tokenIndex]];
 		if (_price > head.Price) {
@@ -129,7 +131,7 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 			head.Prev = order.ID;
 			openBuyOrders[_tokenIndex]++;
 			buys[buyID] = order;
-			return;
+			return buyID;
 		} else {
 			uint curr = head.Next;
 			if (curr == 0) {
@@ -137,7 +139,7 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 				order.Prev = head.ID;
 				openBuyOrders[_tokenIndex]++;
 				buys[buyID] = order;
-				return;
+				return buyID;
 			}
 			if (buys[_targetInsertion].TokenIndex == _tokenIndex && buys[_targetInsertion].Price > _price && buys[_targetInsertion].Volume != 0) {
 				curr = _targetInsertion;
@@ -153,7 +155,7 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 				order.Prev = curr;
 				openBuyOrders[_tokenIndex]++;
 				buys[buyID] = order;
-				return;
+				return buyID;
 			}
 			buys[buys[curr].Prev].Next = order.ID;
 			order.Prev = buys[curr].Prev;
@@ -164,13 +166,14 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 		}
 	}
 
-	function limitSell(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public override {
+	function limitSell(uint _tokenIndex, uint _price, uint _volume, uint _targetInsertion) public override returns(uint newID) {
+		require(_price.mul(_volume).div(BONE) >= MINIMUM_ORDER_SIZE);
 		IERC20 Fiat = IERC20(FxPerpetuals[_tokenIndex]);
 		uint newVolume;
 		if (buys[buyHeads[_tokenIndex]].Price >= _price) {
 			newVolume = marketSell(_tokenIndex, _price, _volume);
 			if (newVolume == 0) {
-				return;
+				return 0;
 			}
 			Fiat.transferFrom(msg.sender, address(this), newVolume);
 		} else {
@@ -190,7 +193,7 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 		if (openSellOrders[_tokenIndex] == 0) {
 			sellHeads[_tokenIndex] = sellID;
 			openSellOrders[_tokenIndex]++;
-			return;
+			return sellID;
 		}
 		SellOrder storage head = sells[sellHeads[_tokenIndex]];
 		if (_price < head.Price) {
@@ -199,7 +202,7 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 			head.Prev = order.ID;
 			openSellOrders[_tokenIndex]++;
 			sells[sellID] = order;
-			return;
+			return sellID;
 		} else {
 			uint curr = head.Next;
 			if (curr == 0) {
@@ -207,7 +210,7 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 				order.Prev = head.ID;
 				openSellOrders[_tokenIndex]++;
 				sells[sellID] = order;
-				return;
+				return sellID;
 			}
 			if (sells[_targetInsertion].TokenIndex == _tokenIndex && sells[_targetInsertion].Price < _price && sells[_targetInsertion].Volume != 0) {
 				curr = _targetInsertion;
@@ -223,7 +226,7 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 				order.Prev = curr;
 				openSellOrders[_tokenIndex]++;
 				sells[sellID] = order;
-				return;
+				return sellID;
 			}
 			sells[sells[curr].Prev].Next = order.ID;
 			order.Prev = sells[curr].Prev;
@@ -298,6 +301,7 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 		BuyOrder memory order = buys[_ID];
 		require(order.Maker == msg.sender);
 		require(_newVolume != order.Volume && _newVolume > 0);
+		require(_newVolume.mul(order.Price).div(BONE) >= MINIMUM_ORDER_SIZE);
 		uint oldValue = order.Volume.mul(order.Price).div(BONE);
 		uint newValue = _newVolume.mul(order.Price).div(BONE);
 		uint dif = oldValue > newValue ? oldValue - newValue : newValue - oldValue;
@@ -314,6 +318,7 @@ contract OrderBook is IOrderBook, Initializable, OwnableUpgradeable {
 		SellOrder memory order = sells[_ID];
 		require(order.Maker == msg.sender);
 		require(_newVolume != order.Volume && _newVolume > 0);
+		require(_newVolume.mul(order.Price).div(BONE) >= MINIMUM_ORDER_SIZE);
 		IERC20 Fiat = IERC20(FxPerpetuals[_ID]);
 		uint dif = order.Volume > _newVolume ? order.Volume - _newVolume : _newVolume - order.Volume;
 		uint oldVolume = order.Volume;
