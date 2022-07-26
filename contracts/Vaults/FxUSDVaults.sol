@@ -35,7 +35,7 @@ contract FxUSDVaults is Initializable, FxVaults {
 		perpStatic.mint(msg.sender, _amount);
 	}
 
-	function detectLiquidation(uint _vaultID) internal view override returns(bool success) {
+	function detectLiquidation(uint _vaultID) public view override returns(bool success) {
 		Vault memory vault = Vaults[_vaultID];
 		uint collateral = convertTokenDenomintation(vault.CollateralIndex, vault.Collateral);
 		uint debt = vault.Debt.mul(DYNAMIC_DEBT_MULTIPLIER).div(BONE);

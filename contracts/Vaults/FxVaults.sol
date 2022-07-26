@@ -8,8 +8,9 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../RateOracle.sol";
 import "./FxPerpStatic.sol";
 import "./FxPerpDynamic.sol";
+import "../utils/interfaces/IFxVaults.sol";
 
-contract FxVaults is Initializable {
+contract FxVaults is IFxVaults, Initializable {
 
 	using SafeMathUpgradeable for uint256;
 
@@ -84,7 +85,7 @@ contract FxVaults is Initializable {
 		_;
 	}
 
-	function openVault(uint _collateralIndex) external returns(uint) {
+	function openVault(uint _collateralIndex) external override returns(uint) {
 		require(_collateralIndex < collateralWhitelist.length);
 		Vault memory vault = Vault(
 			msg.sender,
@@ -98,19 +99,23 @@ contract FxVaults is Initializable {
 		return vault.ID;
 	}
 
-	function getVault(uint _index) external view returns(address vaultOwner, uint collateralIndex, uint collateral, uint debt, uint id) {
-		Vault memory vault = Vaults[_index];
-		return (vault.Owner, vault.CollateralIndex, vault.Collateral, vault.Debt, vault.ID);
+	function getVault(uint _vaultID) external override view returns(address vaultOwner, uint collateralIndex, uint collateral, uint debt, uint id, bool closed) {
+		Vault memory vault = Vaults[_vaultID];
+		return (vault.Owner, vault.CollateralIndex, vault.Collateral, vault.Debt, vault.ID, isClosed[_vaultID]);
 	}
 
-	function supply(uint _vaultID, uint _amount) external vaultNotClosed(_vaultID) {
+	function getID() external override view returns(uint) {
+		return vaultID;
+	}
+
+	function supply(uint _vaultID, uint _amount) external override vaultNotClosed(_vaultID) {
 		Vault storage vault = Vaults[_vaultID];
 		IERC20 collateral = IERC20(collateralWhitelist[vault.CollateralIndex]);
 		require(collateral.transferFrom(msg.sender, address(this), _amount));
 		vault.Collateral = vault.Collateral.add(_amount);
 	}
 
-	function withdraw(uint _vaultID, uint _amount) external virtual onlyVaultOwner(_vaultID) vaultNotClosed(_vaultID) {
+	function withdraw(uint _vaultID, uint _amount) external virtual override onlyVaultOwner(_vaultID) vaultNotClosed(_vaultID) {
 		Vault storage vault = Vaults[_vaultID];
 		require(vault.Collateral >= _amount);
 		uint debt = convertTokenDenomintation(debtTokenIndex, vault.Debt);
@@ -121,7 +126,7 @@ contract FxVaults is Initializable {
 		collateral.transfer(msg.sender, _amount);
 	}
 
-	function borrow(uint _vaultID, uint _amount) external virtual onlyVaultOwner(_vaultID) vaultNotClosed(_vaultID) {
+	function borrow(uint _vaultID, uint _amount) external virtual override onlyVaultOwner(_vaultID) vaultNotClosed(_vaultID) {
 		Vault storage vault = Vaults[_vaultID];
 		uint newDebt = convertTokenDenomintation(debtTokenIndex, vault.Debt.add(_amount));
 		uint collateral = convertTokenDenomintation(vault.CollateralIndex, vault.Collateral);
@@ -130,20 +135,27 @@ contract FxVaults is Initializable {
 		perpStatic.mint(msg.sender, _amount);
 	}
 
-	function repay(uint _vaultID, uint _amount) external vaultNotClosed(_vaultID) {
+	function repay(uint _vaultID, uint _amount) external override vaultNotClosed(_vaultID) {
 		Vault storage vault = Vaults[_vaultID];
 		require(vault.Debt >= _amount);
 		vault.Debt = vault.Debt.sub(_amount);
 		perpStatic.burn(msg.sender, _amount);
 	}
 
-	function closeVault(uint _vaultID) external onlyVaultOwner(_vaultID) vaultNotClosed(_vaultID) {
+	function closeVault(uint _vaultID) external override onlyVaultOwner(_vaultID) vaultNotClosed(_vaultID) {
 		_close(_vaultID);
 	}
 
-	function liquidate(uint _vaultID) external vaultNotClosed(_vaultID) {
+	function liquidate(uint _vaultID) external override vaultNotClosed(_vaultID) {
 		require(detectLiquidation(_vaultID));
 		_close(_vaultID);
+	}
+
+	function detectLiquidation(uint _vaultID) public virtual override view returns(bool success) {
+		Vault memory vault = Vaults[_vaultID];
+		uint debt = convertTokenDenomintation(debtTokenIndex, vault.Debt.mul(DYNAMIC_DEBT_MULTIPLIER).div(BONE));
+		uint collateral = convertTokenDenomintation(vault.CollateralIndex, vault.Collateral);
+		success = debt.mul(BONE).div(collateral) >= MAX_DEBT_RATIO && debt != 0;
 	}
 
 	function _close(uint _vaultID) internal {
@@ -154,13 +166,6 @@ contract FxVaults is Initializable {
 		collateral.transfer(msg.sender, vault.Collateral);
 		delete Vaults[_vaultID];
 		isClosed[_vaultID] = true;
-	}
-
-	function detectLiquidation(uint _vaultID) internal virtual view returns(bool success) {
-		Vault memory vault = Vaults[_vaultID];
-		uint debt = convertTokenDenomintation(debtTokenIndex, vault.Debt.mul(DYNAMIC_DEBT_MULTIPLIER).div(BONE));
-		uint collateral = convertTokenDenomintation(vault.CollateralIndex, vault.Collateral);
-		success = debt.mul(BONE).div(collateral) >= MAX_DEBT_RATIO && debt != 0;
 	}
 
 	function vaultStateIsValid(uint _staticDebt, uint _collateral) internal view returns(bool success) {
